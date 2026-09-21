@@ -29,7 +29,7 @@ Path resolution: `DB_PATH` env var, else `../../data/kfm.db` relative to the sou
 project root, decision #15. The parent directory is created if missing, so a fresh clone can run
 `npm run migrate` immediately.
 
-**`node:sqlite`, not `better-sqlite3`** — built into Node 26, so there is no native dependency,
+**`node:sqlite`, not `better-sqlite3`** — built into Node 22.5+, so there is no native dependency,
 no compile step, and nothing to rebuild on a Node upgrade. Verified with a real insert/select
 round-trip on v26.5.0 before any code was written against it.
 

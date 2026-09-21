@@ -1,7 +1,7 @@
 # Handover — running, building, deploying
 
-*Status: as-built for local operation, verified 2026-09-22. The deploy section is **target
-state** — nothing has been deployed anywhere.*
+*Status: as-built. Local operation and the live deployment on hostinger-kerry were both
+verified 2026-09-22. §8a is the live deployment; §8b is the generic fleet standard.*
 
 ## 1. What runs where
 
@@ -13,7 +13,10 @@ state** — nothing has been deployed anywhere.*
 | Needs the other? | **yes** — `/`, `/sectors`, `/people` throw if the API is down | no |
 | State | none | `data/kfm.db` |
 
-Node **v26.5.0** is required — `node:sqlite` is a built-in, so there is no fallback driver.
+Node **22.5 or newer** is required — `node:sqlite` is a built-in with no fallback driver.
+Developed on v26.5.0; production on kerry runs v22.22.3. Measured 2026-09-22: v20.20.2 throws
+`ERR_UNKNOWN_BUILTIN_MODULE`, v22.22.3 completes a full insert/select round-trip but prints an
+`ExperimentalWarning`.
 
 ## 2. First run, from a fresh clone
 
@@ -129,16 +132,60 @@ npm run migrate && npm run seed
 ⚠️ This is the **only** destructive operation in the project. `contact_submissions` cannot be
 rebuilt from anything. Take a copy of `kfm.db` first.
 
-## 8. Deploy — ⏳ TARGET STATE, not executed
+## 8a. Live deployment — hostinger-kerry (as-built 2026-09-22)
+
+| | Value |
+|---|---|
+| Path | `/srv/kfmgroup` (486 MB) |
+| Frontend | PM2 `kfmgroup-frontend`, port **3240** |
+| Backend | PM2 `kfmgroup-backend`, port **8098**, bound 127.0.0.1 |
+| Node | `/root/.nvm/versions/node/v22.22.3/bin/node` — **not** the system v20 |
+| Database | `/srv/kfmgroup/data/kfm.db` |
+| nginx | `/etc/nginx/sites-available/kfmgroup.my`, symlinked into `sites-enabled` |
+| Rate limit | `/etc/nginx/conf.d/kfmgroup-ratelimit.conf`, zone `kfmgroup_api` 60r/m |
+| Persistence | `pm2 save` done; `pm2-root` unit is `enabled` |
+
+Verified through nginx with a `Host: kfmgroup.my` header: `/`, `/sectors`, `/people`,
+`/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/api/health` all 200; the three RM figures and the
+people render; `POST /api/contact` wrote row id 1 to the server database.
+
+⚠️ **The system Node on kerry is v20 and cannot run the backend** — `require('node:sqlite')`
+throws `ERR_UNKNOWN_BUILTIN_MODULE`. PM2 was started with the nvm v22 binary explicitly. If a
+process is ever restarted without that interpreter it will not come up.
+
+⚠️ **`npm run build` on kerry needs the backend running first** (ISR prerenders the API-backed
+pages). The deploy order is: install → migrate → seed → build backend → start backend under PM2
+→ build frontend → start frontend.
+
+### Redeploying
+
+```bash
+ssh hostinger-kerry
+export PATH=/root/.nvm/versions/node/v22.22.3/bin:$PATH
+cd /srv/kfmgroup && git pull --ff-only
+cd backend  && npm install && build-safe npx tsc && pm2 restart kfmgroup-backend
+cd ../frontend && npm install && API_BASE=http://127.0.0.1:8098 build-safe npx next build
+pm2 restart kfmgroup-frontend
+```
+
+Run `npm run seed` in `backend/` only when the content changed. Use `build-safe` — kerry is a
+shared multisite box and an uncapped build can starve the other 24 PM2 apps.
+
+### ⏳ Still to do on the server
+
+1. Point `kfmgroup.my` DNS at kerry, then `certbot --nginx -d kfmgroup.my -d www.kfmgroup.my`.
+2. Back up `/srv/kfmgroup/data/kfm.db` — still the only copy of contact submissions.
+3. Row id 1 in the server database is a deploy verification, not a real enquiry.
+
+## 8b. Deploy — ⏳ fleet standard, for reference
 
 No repo, no domain, no host has been chosen ([`README.md` §3](README.md#3-pending--️-not-decisions-just-open-items)).
 Written against the fleet standard so the shape is agreed before anyone starts:
 
 1. **Repo** — `github.com/azlanabas/<name>` per the workspace default for new projects.
    Name ⏳ undecided.
-2. **Host** — ⏳ undecided. Both halves are Node, so any fleet server with Node 26 works;
-   `hostinger-kerry` is the usual home for app work. **Verify Node 26 on the target before
-   committing** — `node:sqlite` will not exist on Node 20 or 22.
+2. **Host** — ✅ `hostinger-kerry`, see §8a. **Verify the Node major on any new target
+   before committing** — `node:sqlite` is absent on Node 20 (measured) and experimental on 22.
 3. **Processes** — PM2, one app per half. The backend stays on `127.0.0.1:4000`.
 4. **nginx** — proxy `/` to `:3000`. **Do not expose `:4000`.** `/media/…` and `/fonts/…` are
    served by Next out of `public/`.
@@ -154,7 +201,8 @@ Written against the fleet standard so the shape is agreed before anyone starts:
 
 ## 9. Gotchas
 
-1. **Node 26 or the backend will not start.** `node:sqlite` is built in; there is no fallback.
+1. **Node 22.5+ or the backend will not start.** `node:sqlite` is built in; there is no
+   fallback. Node 20 throws `ERR_UNKNOWN_BUILTIN_MODULE` — measured on kerry 2026-09-22.
 2. **`media/` is at the project root, not in `public/`.** `frontend/scripts/sync-media.mjs`
    mirrors it on `predev` / `prebuild`. The mirror is gitignored; editing it directly is lost work.
 3. **`agentRules: false` is load-bearing.** Next 16 writes `CLAUDE.md` and `AGENTS.md` into

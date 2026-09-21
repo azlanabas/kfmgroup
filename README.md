@@ -1,11 +1,12 @@
 # KFM Group — Next.js + Express + SQLite — As-built
 
-> **Status: BUILDING — the port is complete and verified locally; nothing is deployed.**
-> Ported from the Claude Artifact `KFM Group.html` on 2026-09-21/22.
+> **Status: DEPLOYED — running on hostinger-kerry at `/srv/kfmgroup`, awaiting DNS.**
+> Ported from the Claude Artifact `KFM Group.html` on 2026-09-21/22, deployed 2026-09-22.
 
-**Location / source of truth:** `~/Documents/Claude/PROJECTS/kfmgroup` on this Mac.
-⚠️ **Not yet in git and not on any server** — no repo, no remote, no host. See §3.
-**Owners:** Azlan Abas. **Target URL:** [OWNER INPUT REQUIRED] — no domain decided.
+**Repo:** https://github.com/azlanabas/kfmgroup (public, `main`).
+**Server:** `hostinger-kerry:/srv/kfmgroup` — PM2 `kfmgroup-frontend` :3240, `kfmgroup-backend` :8098.
+**Owners:** Azlan Abas. **Target URL:** https://kfmgroup.my — ⏳ **DNS not pointed here yet**;
+the nginx vhost is staged and inert, and no certificate has been issued. See §3.
 **Compiled:** 2026-09-22 · **Decisions finalised:** 2026-09-22.
 
 ---
@@ -16,11 +17,11 @@
 
 | | Version | Why it is not optional |
 |---|---|---|
-| **Node.js** | **26.x** (built on v26.5.0) | The backend uses `node:sqlite`, a Node 26 built-in. There is **no fallback driver** — on Node 20 or 22 the API will not start |
-| npm | 11.x (built on 11.17.0) | ships with Node 26 |
+| **Node.js** | **22.5+**; built and verified on v26.5.0 | The backend uses `node:sqlite`, a Node built-in with **no fallback driver**. Measured 2026-09-22: it works on **v22.22.3** (prints an `ExperimentalWarning`) and throws `ERR_UNKNOWN_BUILTIN_MODULE` on **v20.20.2**. Production runs v22.22.3 |
+| npm | 10.8+ | ships with Node |
 
 ```bash
-node -v      # must print v26.x
+node -v      # v22.5 or newer; 26.x is what this was developed on
 ```
 
 Nothing else is needed. No database server to install, no native modules to compile — SQLite is
@@ -102,7 +103,8 @@ the process started.
 
 ### Two things that will bite
 
-1. **Node must be 26.** `node:sqlite` has no fallback.
+1. **Node must be 22.5 or newer.** `node:sqlite` has no fallback driver, and Node 20 throws
+   `ERR_UNKNOWN_BUILTIN_MODULE` outright.
 2. **Add images to `media/` at the project root — never `frontend/public/media/`.** That folder
    is a generated mirror, wiped and rebuilt on every `dev` and `build`.
 
@@ -192,10 +194,15 @@ The single place decisions live. Other documents cite this table; they do not re
 
 ## 3. Pending — ⏳ not decisions, just open items
 
-1. ⏳ **No git repo.** Nothing is committed. Per the workspace rule, new projects default to
-   `github.com/azlanabas`, but no repo has been created or named.
-2. ⏳ **No target domain and no host.** Nothing is deployed; `handover.md` §Deploy is written
-   against the fleet standard but has not been executed anywhere.
+1. ✅ Repo created — `github.com/azlanabas/kfmgroup`, public, default branch `main`.
+2. ⏳ **DNS for `kfmgroup.my` still points at the client's live WordPress.** The app is running
+   on kerry and the vhost is in place, but it receives no traffic until the A record moves.
+   **No TLS certificate yet** — certbot cannot validate until DNS resolves to kerry, so the
+   vhost is HTTP-only.
+2b. ⚠️ **kerry runs Node v22.22.3, not the v26.5.0 this was built on** (owner decision,
+   2026-09-22). `node:sqlite` works there — proven by a live insert/select round-trip — but is
+   flagged experimental and prints a warning on every start. The system Node on kerry is v20,
+   which cannot run the backend at all (`ERR_UNKNOWN_BUILTIN_MODULE`).
 3. ⏳ **Two test rows sit in `contact_submissions`** (ids 1 and 2, from this session's
    verification). Left in place — deleting rows is the owner's call.
 4. ⏳ **`created_at` is stored in UTC** (`datetime('now')`). Row 2 reads `2026-09-21 16:32:31`

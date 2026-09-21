@@ -44,7 +44,7 @@ before the project gains a CI step.
 
 ### Why `node:sqlite`
 
-Built into Node 26 — no native dependency, no compile step, nothing to rebuild when Node
+Built into Node (22.5+) — no native dependency, no compile step, nothing to rebuild when Node
 upgrades. `better-sqlite3` was not needed. Verified working with a real insert/select before any
 code was written against it.
 
