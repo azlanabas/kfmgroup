@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/JsonLd";
+import { graph, pageSchema } from "@/lib/schema";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { HalftoneFigure } from "@/components/Figures";
@@ -5,6 +7,7 @@ import { Kicker } from "@/components/Kicker";
 import { siteConfig } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/careers" },
   title: "Careers — KFM Group Sdn Bhd",
   description:
     "Facility management is a shift-work business. The disciplines KFM Group hires, and how to send a CV.",
@@ -24,7 +27,7 @@ export default function CareersPage() {
   if (!siteConfig.showCareers) notFound();
 
   return (
-    <main className="mx-auto max-w-[1240px] px-[var(--edge)] pt-[clamp(44px,6vw,92px)]">
+    <main id="main" className="mx-auto max-w-[1240px] px-[var(--edge)] pt-[clamp(44px,6vw,92px)]">
       <Kicker>Careers</Kicker>
       <h1 className="m-0 -ml-[0.035em] max-w-[16ch] font-heading text-[clamp(34px,4.6vw,62px)] leading-[1.08] tracking-[-0.02em]">
         The building runs because someone turned up.
@@ -63,6 +66,7 @@ export default function CareersPage() {
           reveal
         />
       </div>
+      <JsonLd data={graph(pageSchema("/careers") ?? [])} />
     </main>
   );
 }

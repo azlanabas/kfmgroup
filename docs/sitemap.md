@@ -1,7 +1,7 @@
 # Sitemap
 
 *Status: as-built. Every route and endpoint below was requested in a real browser or with curl
-on 2026-09-22 and returned what is described.*
+on 2026-09-22 and returned what is described. All 14 routes prerender — none is dynamic.*
 
 ## 1. Navigation
 
@@ -31,17 +31,27 @@ administration · Condition assessment & audits · Integrated FM, project & cons
 
 | Route | Title | Render | Data | Sections |
 |---|---|---|---|---|
-| `/` | KFM Group Sdn Bhd — Facility & asset management | **dynamic** | `GET /api/contracts` | Hero · FactRule · CoreBusiness · TechSplit · OnContract · Quote · HomeCta |
+| `/` | KFM Group Sdn Bhd — Facility & asset management | ISR 1h | `GET /api/contracts` | Hero · FactRule · CoreBusiness · TechSplit · OnContract · Quote · HomeCta |
 | `/about` | About — KFM Group Sdn Bhd | static | — | AboutIntro (story, vision) · AboutDetail (sustainability, 6 value propositions, competencies) |
 | `/work` | What we do — KFM Group Sdn Bhd | static | — | intro · ServiceElements (4 numbered elements × 2 sub-services) · closing CTA |
 | `/tech` | Technology & sustainability — KFM Group Sdn Bhd | static | — | intro · 4 plate-numeral capabilities · wide print figure · low-carbon split |
-| `/sectors` | Sectors — KFM Group Sdn Bhd | **dynamic** | `GET /api/contracts` | 3 live sector blocks · Commercial & offices (narrative) · CompletedContracts table · 11 director projects |
-| `/people` | Our people — KFM Group Sdn Bhd | **dynamic** | `GET /api/people` | Directors and shareholders (3) · Management (5) |
+| `/sectors` | Sectors — KFM Group Sdn Bhd | ISR 1h | `GET /api/contracts` | 3 live sector blocks · Commercial & offices (narrative) · CompletedContracts table · 11 director projects |
+| `/people` | Our people — KFM Group Sdn Bhd | ISR 1h | `GET /api/people` | Directors and shareholders (3) · Management (5) |
 | `/careers` | Careers — KFM Group Sdn Bhd | static | — | intro · 6 disciplines · applying (mailto) |
 | `/contact` | Contact — KFM Group Sdn Bhd | static | `POST` via Server Action | 3 contact columns · ContactForm · 6 registrations · 6 company facts |
 
 `/careers` calls `notFound()` when `siteConfig.showCareers` is false, so turning the flag off
 removes both the nav link and the route.
+
+### Generated, non-HTML routes
+
+| Route | Source | Purpose |
+|---|---|---|
+| `/sitemap.xml` | `src/app/sitemap.ts` | 8 URLs, driven by `src/lib/routes.ts` so it cannot fall behind the nav |
+| `/robots.txt` | `src/app/robots.ts` | allows `*` except `/api/`; **explicitly allows the AI answer-engine crawlers** (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, …) |
+| `/llms.txt` | `src/app/llms.txt/route.ts` | llmstxt.org brief — company facts, services, live and completed contracts, leadership, page index. Obeys `showContractValues` |
+
+`/careers` is omitted from the sitemap and llms.txt when `siteConfig.showCareers` is false.
 
 There is no `/404` design of its own — Next's default `not-found` renders inside the shell.
 

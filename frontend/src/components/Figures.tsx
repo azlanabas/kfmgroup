@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 /**
  * The two photographic treatments.
  *
@@ -8,14 +10,21 @@
  * HalftoneFigure is the cheaper treatment — a dot screen multiplied over a
  * desaturated photograph, no filter and no driver.
  *
- * Both use a plain <img>. The photographs are local files under /media/,
- * mirrored from ../media by scripts/sync-media.mjs — nothing is fetched from
- * kfmgroup.my at runtime. next/image is not used because these images are
- * already sized for their slots and the CMYK filter chain operates on the
- * element itself, which next/image's wrapper markup would complicate.
+ * Both use next/image in `fill` mode, which serves AVIF/WebP with a srcset and
+ * lazy-loads anything below the fold. It renders a real <img>, so the CMYK
+ * filter chain and the halftone ::after still apply exactly as before — the
+ * filter lives on the wrapper, not the image. Both wrappers are already
+ * `position: relative` in globals.css (`.cmyk .print` and `.halftone`), which
+ * is what `fill` needs.
+ *
+ * `priority` is for above-the-fold art only: the home hero and each page's
+ * lead figure. Everything else stays lazy.
  */
 
 type Img = { src: string; alt: string };
+
+/** Matches the layout: full width on mobile, then a share of the 1240px page. */
+const SIZES_DEFAULT = "(max-width: 820px) 100vw, (max-width: 1240px) 50vw, 620px";
 
 export function PrintFigure({
   src,
@@ -24,21 +33,31 @@ export function PrintFigure({
   figureClassName = "",
   printClassName = "",
   reveal = true,
+  priority = false,
+  sizes = SIZES_DEFAULT,
 }: Img & {
   /** Tailwind aspect utility, e.g. "aspect-[3/4]". */
   ratio: string;
   figureClassName?: string;
   printClassName?: string;
   reveal?: boolean;
+  priority?: boolean;
+  sizes?: string;
 }) {
   return (
     <figure
       data-reveal={reveal ? "" : undefined}
       className={`cmyk m-0 overflow-visible ${figureClassName}`}
     >
-      <div className={`print ${ratio} ${printClassName}`}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} className="block h-full w-full object-cover" />
+      <div className={`print relative ${ratio} ${printClassName}`}>
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes={sizes}
+          priority={priority}
+          className="object-cover"
+        />
       </div>
     </figure>
   );
@@ -51,18 +70,21 @@ export function HalftoneFigure({
   className = "",
   reveal = false,
   as = "figure",
+  priority = false,
+  sizes = SIZES_DEFAULT,
 }: Img & {
   ratio: string;
   className?: string;
   reveal?: boolean;
   /** The artifact used a bare <div class="halftone"> inside article cards. */
   as?: "figure" | "div";
+  priority?: boolean;
+  sizes?: string;
 }) {
   const inner = (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={alt} className="block h-full w-full object-cover" />
+    <Image src={src} alt={alt} fill sizes={sizes} priority={priority} className="object-cover" />
   );
-  const cls = `halftone m-0 ${ratio} ${className}`;
+  const cls = `halftone relative m-0 ${ratio} ${className}`;
   return as === "div" ? (
     <div data-reveal={reveal ? "" : undefined} className={cls}>
       {inner}

@@ -135,6 +135,17 @@
     text-underline-offset: 3px;
   }
   a:hover { color: var(--color-accent-2); }
+
+  /* A link sitting inside a block of running text must be distinguishable by
+     something other than colour — Lighthouse `link-in-text-block`, raised on
+     /careers 2026-09-22 for the mailto in the "Applying" paragraph. Nav links,
+     buttons and card links are excluded: they are not inside a text block, so
+     colour plus position is sufficient there. */
+  p > a,
+  li > a,
+  dd > a {
+    text-decoration: underline;
+  }
   img { display: block; max-width: 100%; }
   figure { margin: 0; }
   figcaption {

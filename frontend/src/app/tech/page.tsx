@@ -1,9 +1,12 @@
+import { JsonLd } from "@/components/JsonLd";
+import { graph, pageSchema } from "@/lib/schema";
 import type { Metadata } from "next";
 import { PrintFigure } from "@/components/Figures";
 import { Kicker } from "@/components/Kicker";
 import { PlateNumeral } from "@/components/PlateText";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/tech" },
   title: "Technology & sustainability — KFM Group Sdn Bhd",
   description:
     "Instrumented buildings, humane operations: CMMS, energy management, BIM and robotics, with low carbon taken as a daily operating decision.",
@@ -34,7 +37,7 @@ const CAPABILITIES = [
 
 export default function TechPage() {
   return (
-    <main className="mx-auto max-w-[1240px] px-[var(--edge)] pt-[clamp(44px,6vw,92px)]">
+    <main id="main" className="mx-auto max-w-[1240px] px-[var(--edge)] pt-[clamp(44px,6vw,92px)]">
       <Kicker>Technology &amp; sustainability</Kicker>
       <h1 className="m-0 -ml-[0.035em] max-w-[17ch] font-heading text-[clamp(34px,4.6vw,62px)] leading-[1.08] tracking-[-0.02em]">
         Instrumented buildings, humane operations.
@@ -87,6 +90,7 @@ export default function TechPage() {
           ratio="aspect-square"
         />
       </section>
+      <JsonLd data={graph(pageSchema("/tech") ?? [])} />
     </main>
   );
 }

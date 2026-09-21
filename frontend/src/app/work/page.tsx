@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/JsonLd";
+import { graph, pageSchema } from "@/lib/schema";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HalftoneFigure, PrintFigure } from "@/components/Figures";
@@ -5,6 +7,7 @@ import { Kicker } from "@/components/Kicker";
 import { ServiceElements } from "@/components/sections/work/ServiceElements";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/work" },
   title: "What we do — KFM Group Sdn Bhd",
   description:
     "A multidisciplinary service, run as one contract: set-up and advisory, contract implementation, condition assessment, and integrated FM.",
@@ -12,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function WorkPage() {
   return (
-    <main className="mx-auto max-w-[1240px] px-[var(--edge)] pt-[clamp(44px,6vw,92px)]">
+    <main id="main" className="mx-auto max-w-[1240px] px-[var(--edge)] pt-[clamp(44px,6vw,92px)]">
       <Kicker>What we do</Kicker>
       <h1 className="m-0 -ml-[0.035em] max-w-[18ch] font-heading text-[clamp(34px,4.6vw,62px)] leading-[1.08] tracking-[-0.02em]">
         A multidisciplinary service, run as one contract.
@@ -29,6 +32,8 @@ export default function WorkPage() {
         ratio="aspect-[16/9]"
         figureClassName="mt-10"
         printClassName="max-h-[56vh]"
+        priority
+        sizes="(max-width: 1240px) 100vw, 1240px"
       />
 
       <ServiceElements />
@@ -49,6 +54,7 @@ export default function WorkPage() {
           </Link>
         </div>
       </section>
+      <JsonLd data={graph(pageSchema("/work") ?? [])} />
     </main>
   );
 }

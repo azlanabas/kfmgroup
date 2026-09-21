@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/JsonLd";
+import { graph, pageSchema } from "@/lib/schema";
 import type { Metadata } from "next";
 import { Kicker } from "@/components/Kicker";
 import { ContactForm } from "@/components/sections/contact/ContactForm";
@@ -5,6 +7,7 @@ import { CompanyFacts, Registrations } from "@/components/sections/contact/Regis
 import { siteConfig } from "@/lib/siteConfig";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/contact" },
   title: "Contact — KFM Group Sdn Bhd",
   description:
     "Start with a conversation. Direct contact, corporate office, operations bases, registrations and certification.",
@@ -14,7 +17,7 @@ export default function ContactPage() {
   const { company } = siteConfig;
 
   return (
-    <main className="mx-auto max-w-[1240px] px-[var(--edge)] pt-[clamp(44px,6vw,92px)]">
+    <main id="main" className="mx-auto max-w-[1240px] px-[var(--edge)] pt-[clamp(44px,6vw,92px)]">
       <Kicker>Contact</Kicker>
       <h1 className="m-0 -ml-[0.035em] max-w-[15ch] font-heading text-[clamp(34px,4.6vw,62px)] leading-[1.08] tracking-[-0.02em]">
         Start with a conversation.
@@ -51,6 +54,7 @@ export default function ContactPage() {
       <ContactForm />
       <Registrations />
       <CompanyFacts />
+      <JsonLd data={graph(pageSchema("/contact") ?? [])} />
     </main>
   );
 }

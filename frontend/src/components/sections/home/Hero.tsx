@@ -29,6 +29,8 @@ export function Hero() {
         src="/media/photos/hero-technicians.jpeg"
         alt="KFM technicians on site at a managed facility"
         ratio="aspect-[3/4]"
+        priority
+        sizes="(max-width: 820px) 100vw, 480px"
       />
     </section>
   );

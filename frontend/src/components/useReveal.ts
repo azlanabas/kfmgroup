@@ -13,9 +13,11 @@ import { useEffect } from "react";
  *
  * 1. A MutationObserver replaces the artifact's `setInterval(wire, 500)`.
  *    This hook lives in the layout, so its effect runs when the SHELL
- *    commits; the API-backed pages are `force-dynamic` and stream their
- *    content in afterwards, which a `pathname` dependency never sees. The
- *    first implementation armed 0 of 19 elements for exactly this reason.
+ *    commits; the API-backed pages stream their content in afterwards, which a
+ *    `pathname` dependency never sees. The first implementation armed 0 of 19
+ *    elements for exactly this reason. (Those pages were `force-dynamic` when
+ *    the fault was found and are ISR now — the ordering is the same either
+ *    way, so the MutationObserver is still load-bearing.)
  *
  * 2. `data-armed` is a CSS hook ONLY — never a record of "already observed".
  *    Using it as both made the hook fail under StrictMode's double-invoke:

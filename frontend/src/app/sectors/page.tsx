@@ -1,3 +1,5 @@
+import { JsonLd } from "@/components/JsonLd";
+import { graph, pageSchema } from "@/lib/schema";
 import type { Metadata } from "next";
 import { HalftoneFigure } from "@/components/Figures";
 import { Kicker } from "@/components/Kicker";
@@ -6,13 +8,14 @@ import { SectorBlocks } from "@/components/sections/sectors/SectorBlocks";
 import { getContracts } from "@/lib/api";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/sectors" },
   title: "Sectors — KFM Group Sdn Bhd",
   description:
     "Where the contracts run: healthcare, transport terminals, government and royal buildings, commercial and offices.",
 };
 
-/** Reads both live and completed contracts from the API on every request. */
-export const dynamic = "force-dynamic";
+/** Reads live and completed contracts from the API; cached, revalidated hourly. */
+export const revalidate = 3600;
 
 /**
  * Work delivered by KFM's directors in previous roles. Not contracts of the
@@ -38,7 +41,7 @@ export default async function SectorsPage() {
   const completed = contracts.filter((c) => c.status === "completed");
 
   return (
-    <main className="mx-auto max-w-[1240px] px-[var(--edge)] pt-[clamp(44px,6vw,92px)]">
+    <main id="main" className="mx-auto max-w-[1240px] px-[var(--edge)] pt-[clamp(44px,6vw,92px)]">
       <Kicker>Sectors</Kicker>
       <h1 className="m-0 -ml-[0.035em] max-w-[16ch] font-heading text-[clamp(34px,4.6vw,62px)] leading-[1.08] tracking-[-0.02em]">
         Where the contracts run.
@@ -89,6 +92,7 @@ export default async function SectorsPage() {
           ))}
         </ul>
       </section>
+      <JsonLd data={graph(pageSchema("/sectors") ?? [])} />
     </main>
   );
 }

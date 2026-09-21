@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
@@ -58,10 +59,12 @@ export function SiteNav() {
           className="nav-brand mr-auto flex cursor-pointer items-center gap-3 transition-opacity duration-[180ms] hover:opacity-65"
           onClick={closeMenu}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/media/brand/kfm-logo.png"
             alt="KFM Group Sdn Bhd"
+            width={902}
+            height={236}
+            priority
             className="block h-[38px] w-auto mix-blend-multiply"
           />
           <span className="text-[11.5px] tracking-[0.14em] text-accent-700 uppercase">

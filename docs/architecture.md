@@ -50,12 +50,19 @@ code was written against it.
 
 ## 2. Request paths
 
-### Reads — Server Components only
+### Reads — Server Components only, ISR
 
-`/`, `/sectors` and `/people` are `export const dynamic = "force-dynamic"`. On each request the
-Next server calls the API through `frontend/src/lib/api.ts`, which carries `import "server-only"`
-— importing it from a client component is a build error, which is what keeps `API_BASE` off the
-browser.
+`/`, `/sectors`, `/people` and `/llms.txt` read from the API through
+`frontend/src/lib/api.ts`, which carries `import "server-only"` — importing it from a client
+component is a build error, which is what keeps `API_BASE` off the browser.
+
+Those fetches are **cached and revalidated hourly** (`next: { revalidate: 3600, tags:
+['kfm-content'] }`), so the pages are ISR, not per-request — owner decision 2026-09-22. All 14
+routes now prerender; none is dynamic.
+
+⚠️ **Two consequences.** First, `npm run build` now requires the API to be running, because the
+pages are rendered at build time. Second, a `npm run seed` does not appear on the site until the
+next revalidation or deploy; call `revalidateTag('kfm-content')` to publish sooner.
 
 A read that cannot reach the backend **throws** with the URL it tried. It does not fall back to
 an empty list: a dead API surfaces as an error page rather than as a page that quietly renders no
@@ -94,7 +101,7 @@ templating language, driven by `class Component extends DCLogic` through a gener
 
 Two of these needed care and are documented where they live:
 
-- **`useReveal.ts`** — the layout's effect runs when the *shell* commits, but `force-dynamic`
+- **`useReveal.ts`** — the layout's effect runs when the *shell* commits, but the API-backed
   pages stream their content in afterwards. A `pathname` dependency never sees that, so the first
   implementation armed 0 of 19 elements. A MutationObserver re-arms whatever arrives.
 - **`useReveal.ts`, second fault** — `data-armed` was doing double duty as a CSS hook *and* a

@@ -13,11 +13,24 @@ import type { Contract, ContactPayload, ContactResult, Person } from "./types";
  */
 const API_BASE = process.env.API_BASE ?? "http://127.0.0.1:4000";
 
+/**
+ * Contracts and people only change when someone edits seed-data.ts and re-runs
+ * `npm run seed`, so the reads are cached and revalidated hourly rather than
+ * fetched per request (owner decision, 2026-09-22). The pages that use them
+ * become ISR instead of force-dynamic, which is what takes the API off the
+ * critical path of a page load.
+ *
+ * ⚠️ A re-seed does NOT appear immediately — it lands at the next
+ * revalidation, or on the next deploy. To publish sooner, lower this or call
+ * revalidateTag('kfm-content').
+ */
+const REVALIDATE_SECONDS = 3600;
+
 async function getJson<T>(path: string): Promise<T> {
   const url = `${API_BASE}${path}`;
   let res: Response;
   try {
-    res = await fetch(url, { cache: "no-store" });
+    res = await fetch(url, { next: { revalidate: REVALIDATE_SECONDS, tags: ["kfm-content"] } });
   } catch (cause) {
     throw new Error(`KFM API unreachable at ${url} — is the backend running?`, { cause });
   }

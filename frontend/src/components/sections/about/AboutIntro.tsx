@@ -21,6 +21,8 @@ export function AboutIntro() {
         ratio="aspect-[4/3]"
         figureClassName="mt-10"
         printClassName="max-h-[52vh]"
+        priority
+        sizes="(max-width: 1240px) 100vw, 1240px"
       />
 
       <div className="mt-12 grid grid-cols-1 items-start gap-[clamp(28px,5vw,80px)] min-[821px]:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
