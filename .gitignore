@@ -1,0 +1,71 @@
+# KFM Group — project root .gitignore
+# Covers both halves. frontend/ and backend/ keep their own .gitignore files too;
+# this one is authoritative for anything that spans them.
+
+# ── dependencies ───────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/versions
+
+# ── build output ───────────────────────────────────────────────────────────
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# ── the database ───────────────────────────────────────────────────────────
+# data/kfm.db holds real contact submissions and is never committed (owner
+# decision, 2026-09-22). A fresh clone rebuilds it:
+#   cd backend && npm run migrate && npm run seed
+# The -wal and -shm files are SQLite's write-ahead log and shared-memory index.
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/*.sqlite
+data/*.sqlite3
+
+# ── generated media mirror ─────────────────────────────────────────────────
+# The source of truth is media/ at this level, which IS committed.
+# frontend/scripts/sync-media.mjs copies it into public/ on predev/prebuild.
+frontend/public/media/
+
+# ── environment ────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── logs ───────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+
+# ── editor / OS ────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# ── test + tooling output ──────────────────────────────────────────────────
+coverage/
+.nyc_output/
+.turbo/
+.vercel/
+.lighthouseci/
+lighthouse-report*.html
+lighthouse-report*.json
+
+# ── temporary build scripts ────────────────────────────────────────────────
+# The artifact extraction scripts lived here during the port and were deleted;
+# this keeps any future one-off out of the repo by accident.
+_*.mjs
+_extracted/
